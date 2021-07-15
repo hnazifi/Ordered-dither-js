@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- hadi nazifi 9531084 -->
+    <meta charset="UTF-8">
+    <title>multimedia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <script src="https://www.dukelearntoprogram.com/course1/common/js/image/SimpleImage.js" >
+    </script>
+
+    <style>
+        h1 {
+            font-family: arial;
+            color: dimgray;
+        }
+
+        body {
+            font-family: arial;
+            margin: 30px;
+        }
+
+        canvas {
+            height: auto;
+            border: 1px solid lightgray;
+        }
+
+        input {
+            font-size: 14pt;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    var image = null;
+
+    function upload() {
+
+        let fileInput = document.getElementById("finput");
+        image = new SimpleImage(fileInput);
+    }
+
+    function makeGray() {
+        let n = parseInt(document.getElementById('number').value)
+        var matrix = get_matrix(n)
+
+    
+        console.log(n);
+        for (let pixel of image.values()) {
+            var avg = (pixel.getRed() + pixel.getGreen() + pixel.getBlue()) / 3;
+            pixel.setRed(avg);
+            pixel.setGreen(avg);
+            pixel.setBlue(avg);
+        }
+       
+        console.log(image);
+        dither(matrix,n)
+    }
+
+    function dither(matrix,n){
+        for(let i = 0 ; i < image.getHeight(); i++){
+        for(let j = 0 ; j < image.getWidth(); j++){
+            let pixel = image.getPixel(j,i)
+            if(pixel.getRed()  < matrix[i % n][ j % n]){
+                pixel.setRed(0) 
+                pixel.setGreen(0)
+                pixel.setBlue(0)
+            }
+            else{
+                pixel.setRed(255) 
+                pixel.setGreen(255)
+                pixel.setBlue(255)
+            }
+        }
+    }
+    console.log(image);
+    let canvas = document.getElementById("can");
+    setTimeout(() => {
+        image.drawTo(canvas);
+    },1000)    
+}
+
+    function get_matrix(n){
+        if(n == 2){
+            return [[0,2], [3,1]]
+        }
+        let mat = get_matrix(n/2)
+    
+        let result = new Array(n).fill(0).map(() => new Array(n).fill(0));
+
+        for(let i = 0 ; i < n; i++){
+            for(let j = 0 ; j < n; j++){
+                result[i][j] = (Math.pow(n/2,2) * mat[i % (n/2)][j % (n/2)])
+
+                if( i < n/2){
+                    if( j>= n/2){
+                        result[i][j] += 2
+                    }
+                }
+                else{
+                    if ( j>= n/2){
+                        result[i][j] +=1
+                    }
+                    else {
+                        result[i][j] += 3
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    
+    
+    
+    
+</script>
+
+
+<h1>Ordered Dither -- Hadi Nazifi 9531084</h1>
+
+<canvas id="can">
+</canvas>
+
+<p>
+    <input type="file" multiple="false" accept="image/*" id="finput" onchange="upload()">
+</p>
+<p>
+    <label for="number">
+        Enter Matrix Size:
+        <input type="text" id="number">
+    </label>
+</p>
+<p>
+    <input type="button" value="Make Grayscale" onclick="makeGray()">
+</p>
+
+</body>
+</html>
